@@ -1,4 +1,4 @@
-/*She smiles, but nothing behind it feels real. The neon glow wraps around her like armor vibrant, untouchable, cold. Once, maybe, there was warmth in her gestures� but now it�s rehearsed. Perfectly practiced detachment. Her wave is polite, her wink playful, yet there�s an eerie hollowness like a ghost who forgot what it meant to feel. She doesn�t break down. She doesn�t react. She simply exists flawless, empty, and free. Because having zero feelings means never being hurt again.*/
+/* What's the difference between a baby boomer and a matter baby? */
 #include <bits/stdc++.h>
 
 #define TEXT ""
@@ -6,11 +6,14 @@
 using namespace std;
 
 #define pb push_back
+#define mkpr make_pair
+#define eb emplace_back
 #define endl "\n"
 #define ffor(i, a, b) for(int i = a; i <= (b); ++i)
 #define rfor(i, a, b) for(int i = a; i >= (b); --i)
 #define frep(i, a, b) for(int i = a; i < (b); ++i)
 #define rrep(i, a, b) for(int i = a; i > (b); --i)
+#define feach(x, a) for (auto& x : (a))
 #define all(x) (x).begin(),(x).end()
 #define fi first
 #define se second
@@ -26,12 +29,12 @@ typedef pair<double,double> pdd;
 
 mt19937_64 rd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
-const int N = 2e5+10;
-const int INF = 1e9+7;
-const int MD = 1e9+7; //998244353;
-const long long LLINF = 1e18+3;
+void prans(bool answer = true) { cout << (answer ? "YES\n" : "NO\n"); }
+void prno() { cout << "NO\n"; }
+void pryes() { cout << "YES\n"; }
 
-//Starts here
+template<class T, class U> bool minimize(T& a, const U& b) { return b < a ? (a = b, true) : false; }
+template<class T, class U> bool maximize(T& a, const U& b) { return a < b ? (a = b, true) : false; }
 
 namespace dbg_ {
     template<class> inline constexpr bool always_false_v = false;
@@ -96,51 +99,110 @@ namespace dbg_ {
 template<class... Args> void dbg(const Args&... args) { dbg_::go(args...); }
 #define dbgl(...) (std::cerr << "[" #__VA_ARGS__ "] = ", dbg(__VA_ARGS__))
 
+// Constants
+const int N = 2e5+10;
+const int INF = 1e9+7;
+const int MD = 1e9+7; //998244353;
+const long long LLINF = 1e18+3;
+
+const bool MULTI_TEST = false;
+
+//Starts here
 
 int n;
-map<int,int> mp;
+vector<int> num;
+
+pair<int,int> convert(vector<int>&num) {    
+    if (num.size() == 1) {
+        if (num[0] == 8 || num[0] == 11) {
+            return(make_pair(8,11));
+        }
+        else if (num[0] == 0 || num[0] == 13) {
+            return(make_pair(0,13));
+        }
+        else {
+            return(make_pair(num[0],num[0]));
+        }
+    }
+    else {
+        int mx = 0;
+        int mn = 0;
+        bool flag = 0;
+        for(int idx = 0; idx<num.size(); idx++) {
+            mn*=16; mx*=16;
+            if (num[idx] == 8 || num[idx] == 11) {
+                mn += 8;
+                mx += 11;
+            }
+            else if (num[idx] == 0 || num[idx] == 13) {
+                if (!flag) {
+                    mn += 13; mx += 13;
+                }
+                else {
+                    mx += 13;
+                }
+            }
+            else {
+                mn += num[idx]; mx += num[idx];
+            }
+            flag = 1;
+        }
+        return make_pair(mn,mx);
+    }
+}
+
+void print_ans(int x) {
+    if (x == 0) {
+        cout << '0' << endl;
+        return;
+    }
+    vector<char> v;
+    while (x>0) {
+        int val = x%16;
+        if (val < 10) v.push_back(char('0'+val));
+        else v.push_back(char('A'+val-10));
+        x/=16;
+    }
+    reverse(all(v));
+    for (auto c:v) cout << c;
+    cout << endl;
+}
 
 void solve(){
     cin >> n;
-    mp.clear();
-    mp[0] = 3;
-    int val = 0;
-    for (int i=1; i<=n; i++){
-        int x; cin >> x;
-        val^=x;
-        if (mp.find(val) != mp.end()) {
-            mp.insert(make_pair(val,0));
+    int running_min = 0, running_max = 0;
+    ffor(idx,1,n) {
+        string s; cin >> s;
+        // dbg(s);
+        num.clear();
+        frep(i,0,s.size()){
+            if ('0' <= s[i] && s[i] <='9') {
+                num.push_back(s[i]-'0');
+            }
+            else {
+                num.push_back(s[i]-'A'+10);
+            }
         }
-        if(mp[val]) {
-            mp[val^x] = (mp[val^x] + 2*mp[val])%MD;
-        }
-        if (i==n) break;
-        if (mp[val]) {
-            mp[val] = (mp[val]*3)%MD;
-        }
-        // dbg(mp);
+        // dbg(num);
+        auto res = convert(num);
+        // dbg(res);
+        running_min += res.fi;
+        running_max += res.se;
     }
-    int ans = 0;
-    for (auto it=mp.begin(); it!=mp.end(); it++){
-        ans = (ans + it->se)%MD;
-    }
-    // cerr << ans << endl;
-    cout << ans << endl;
+    // dbg(running_min, running_max);
+    print_ans(running_max);
+    print_ans(running_min);
 }
 
-/*Driver Code*/
+/* Cat memes */
 signed main(){
     cin.tie(0) -> sync_with_stdio(0);
-    if (fopen(TEXT".inp","r")){
-        freopen(TEXT".inp","r",stdin);
-        freopen(TEXT".out","w",stdout);
-    }
+    if (fopen(TEXT".inp","r")){ freopen(TEXT".inp","r",stdin); freopen(TEXT".out","w",stdout); }
 
-    int testCount = 1;
-   cin >> testCount;
-    while (testCount--){
-        solve();
-    }
+    int test_count = 1;
+    
+    if (MULTI_TEST) cin >> test_count;
+    while (test_count--){ solve(); }
 
     return 0;
 }

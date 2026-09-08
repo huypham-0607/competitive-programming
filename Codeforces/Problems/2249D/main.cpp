@@ -1,4 +1,4 @@
-/*She smiles, but nothing behind it feels real. The neon glow wraps around her like armor vibrant, untouchable, cold. Once, maybe, there was warmth in her gestures� but now it�s rehearsed. Perfectly practiced detachment. Her wave is polite, her wink playful, yet there�s an eerie hollowness like a ghost who forgot what it meant to feel. She doesn�t break down. She doesn�t react. She simply exists flawless, empty, and free. Because having zero feelings means never being hurt again.*/
+/* What's the difference between a baby boomer and a matter baby? */
 #include <bits/stdc++.h>
 
 #define TEXT ""
@@ -6,11 +6,14 @@
 using namespace std;
 
 #define pb push_back
+#define mkpr make_pair
+#define eb emplace_back
 #define endl "\n"
 #define ffor(i, a, b) for(int i = a; i <= (b); ++i)
 #define rfor(i, a, b) for(int i = a; i >= (b); --i)
 #define frep(i, a, b) for(int i = a; i < (b); ++i)
 #define rrep(i, a, b) for(int i = a; i > (b); --i)
+#define feach(x, a) for (auto& x : (a))
 #define all(x) (x).begin(),(x).end()
 #define fi first
 #define se second
@@ -26,12 +29,12 @@ typedef pair<double,double> pdd;
 
 mt19937_64 rd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
-const int N = 2e5+10;
-const int INF = 1e9+7;
-const int MD = 1e9+7; //998244353;
-const long long LLINF = 1e18+3;
+void prans(bool answer = true) { cout << (answer ? "YES\n" : "NO\n"); }
+void prno() { cout << "NO\n"; }
+void pryes() { cout << "YES\n"; }
 
-//Starts here
+template<class T, class U> bool minimize(T& a, const U& b) { return b < a ? (a = b, true) : false; }
+template<class T, class U> bool maximize(T& a, const U& b) { return a < b ? (a = b, true) : false; }
 
 namespace dbg_ {
     template<class> inline constexpr bool always_false_v = false;
@@ -96,51 +99,80 @@ namespace dbg_ {
 template<class... Args> void dbg(const Args&... args) { dbg_::go(args...); }
 #define dbgl(...) (std::cerr << "[" #__VA_ARGS__ "] = ", dbg(__VA_ARGS__))
 
+// Constants
+constexpr int N = 2500+10;
+constexpr int INF = 1e9+7;
+constexpr int MD = 1e9+7; //998244353;
+constexpr long long LLINF = 1e18+3;
 
-int n;
-map<int,int> mp;
+constexpr bool MULTI_TEST = true;
+
+//Starts here
+
+int n,x;
+int a[N][N];
+int vis[N];
+vector<int> v[2];
 
 void solve(){
-    cin >> n;
-    mp.clear();
-    mp[0] = 3;
-    int val = 0;
-    for (int i=1; i<=n; i++){
-        int x; cin >> x;
-        val^=x;
-        if (mp.find(val) != mp.end()) {
-            mp.insert(make_pair(val,0));
-        }
-        if(mp[val]) {
-            mp[val^x] = (mp[val^x] + 2*mp[val])%MD;
-        }
-        if (i==n) break;
-        if (mp[val]) {
-            mp[val] = (mp[val]*3)%MD;
-        }
-        // dbg(mp);
+    cin >> n >> x;
+
+    if (__builtin_popcountll(n) != 1) {
+        cout << -1 << endl;
+        return;
     }
-    int ans = 0;
-    for (auto it=mp.begin(); it!=mp.end(); it++){
-        ans = (ans + it->se)%MD;
+
+    if (x == 0) {
+        frep(i,0,n) {
+            frep(j,0,n) {
+                a[i][j] = (i^j);
+            }
+        }
     }
-    // cerr << ans << endl;
-    cout << ans << endl;
+    else {
+        if (n == 2) {
+            cout << -1 << endl;
+            return;
+        }
+        v[0].clear();
+        v[1].clear();
+        frep(i,0,n) vis[i] = false;
+        int idx = 0;
+        frep(i,0,n) {
+            if (!vis[i]) {
+                v[idx%2].push_back(i);
+                v[idx%2].push_back(i^x);
+                vis[i] = true; vis[i^x] = true;
+                ++idx;
+            }
+        }
+
+        dbg("passed");
+
+        frep(i,0,n) {
+            frep(j,0,n) {
+                a[i][j] = v[i%2][i/2] ^ v[j%2][j/2] ^ ((i%2) * (j%2) * x);
+            }
+        }
+    }
+    
+    frep(i,0,n) {
+        frep(j,0,n) {
+            cout << a[i][j] << " ";
+        }
+        cout << endl;
+    }
 }
 
-/*Driver Code*/
+/* Cat memes */
 signed main(){
     cin.tie(0) -> sync_with_stdio(0);
-    if (fopen(TEXT".inp","r")){
-        freopen(TEXT".inp","r",stdin);
-        freopen(TEXT".out","w",stdout);
-    }
+    if (fopen(TEXT".inp","r")){ freopen(TEXT".inp","r",stdin); freopen(TEXT".out","w",stdout); }
 
-    int testCount = 1;
-   cin >> testCount;
-    while (testCount--){
-        solve();
-    }
+    int test_count = 1;
+    
+    if (MULTI_TEST) cin >> test_count;
+    while (test_count--){ solve(); }
 
     return 0;
 }

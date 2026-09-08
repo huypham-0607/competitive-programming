@@ -1,16 +1,20 @@
-/*She smiles, but nothing behind it feels real. The neon glow wraps around her like armor vibrant, untouchable, cold. Once, maybe, there was warmth in her gestures� but now it�s rehearsed. Perfectly practiced detachment. Her wave is polite, her wink playful, yet there�s an eerie hollowness like a ghost who forgot what it meant to feel. She doesn�t break down. She doesn�t react. She simply exists flawless, empty, and free. Because having zero feelings means never being hurt again.*/
+/* What's the difference between a baby boomer and a matter baby? */
 #include <bits/stdc++.h>
+#include <cstdio>
 
 #define TEXT ""
 
 using namespace std;
 
 #define pb push_back
+#define mkpr make_pair
+#define eb emplace_back
 #define endl "\n"
 #define ffor(i, a, b) for(int i = a; i <= (b); ++i)
 #define rfor(i, a, b) for(int i = a; i >= (b); --i)
 #define frep(i, a, b) for(int i = a; i < (b); ++i)
 #define rrep(i, a, b) for(int i = a; i > (b); --i)
+#define feach(x, a) for (auto& x : (a))
 #define all(x) (x).begin(),(x).end()
 #define fi first
 #define se second
@@ -26,12 +30,12 @@ typedef pair<double,double> pdd;
 
 mt19937_64 rd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
-const int N = 2e5+10;
-const int INF = 1e9+7;
-const int MD = 1e9+7; //998244353;
-const long long LLINF = 1e18+3;
+void prans(bool answer = true) { cout << (answer ? "YES\n" : "NO\n"); }
+void prno() { cout << "NO\n"; }
+void pryes() { cout << "YES\n"; }
 
-//Starts here
+template<class T, class U> bool minimize(T& a, const U& b) { return b < a ? (a = b, true) : false; }
+template<class T, class U> bool maximize(T& a, const U& b) { return a < b ? (a = b, true) : false; }
 
 namespace dbg_ {
     template<class> inline constexpr bool always_false_v = false;
@@ -96,51 +100,110 @@ namespace dbg_ {
 template<class... Args> void dbg(const Args&... args) { dbg_::go(args...); }
 #define dbgl(...) (std::cerr << "[" #__VA_ARGS__ "] = ", dbg(__VA_ARGS__))
 
+// Constants
+const int N = 5e5+10;
+const int INF = 1e9+7;
+const int LG2 = 19;
+const int LG3 = 12;
+const int MD = 1e9+7; //998244353;
+const long long LLINF = 1e18+3;
+
+const bool MULTI_TEST = false;
+
+//Starts here
+int cache2[LG2];
+int cache3[LG3];
 
 int n;
-map<int,int> mp;
+int cost[N];
+vector<int> dpprev(1<<LG2,0);
+vector<int> dp(1<<LG2,0);
+
+int get_cost(int x) {
+    return (x>n) ? 0 : cost[x];
+}
+
+bool active(int mask, int i) {
+    return (mask&(1<<i));
+}
+
+int broken_profile(int x, int p2, int p3) {
+    rfor(j, p2-1, 0) {
+        frep(mask,0,(1<<p2)) {
+            dp[mask] = 0;
+        }
+    }
+
+    // dbgl(x);
+    rfor(i, p3-1, 0) {
+        rfor(j, p2-1, 0) {
+            swap(dpprev, dp);
+            int pos = x * cache2[j] * cache3[i];
+            int cst = get_cost(pos);
+            frep(mask,0,(1<<p2)) {
+                dp[mask] = LLINF;
+                if (mask&(1<<j)) {
+                    dp[mask] = min(dp[mask], min(dpprev[mask], dpprev[mask^(1<<j)]) + cst);
+                }
+                else {
+                    if ((j >= p2-2) || (active(mask,j+1) || active(mask,j+2))) {
+                        dp[mask] = min(dp[mask], dpprev[mask]);
+                    }
+                    dp[mask] = min(dp[mask], dpprev[mask^(1<<j)]);
+                }
+            }
+            // dbgl(i,j);
+            // dbgl(pos, cst);
+            // dbg(dp.begin(), dp.begin() + (1<<p2));
+        }
+    }
+
+    int res = LLINF;
+    frep(mask,0,(1<<p2)) {
+        res = min(res,dp[mask]);
+    }
+    return res;
+}
 
 void solve(){
     cin >> n;
-    mp.clear();
-    mp[0] = 3;
-    int val = 0;
-    for (int i=1; i<=n; i++){
-        int x; cin >> x;
-        val^=x;
-        if (mp.find(val) != mp.end()) {
-            mp.insert(make_pair(val,0));
-        }
-        if(mp[val]) {
-            mp[val^x] = (mp[val^x] + 2*mp[val])%MD;
-        }
-        if (i==n) break;
-        if (mp[val]) {
-            mp[val] = (mp[val]*3)%MD;
-        }
-        // dbg(mp);
+    ffor(i,1,n) {
+        cin >> cost[i];
     }
     int ans = 0;
-    for (auto it=mp.begin(); it!=mp.end(); it++){
-        ans = (ans + it->se)%MD;
+    ffor(i,1,n/4) {
+        if ((i%2) && (i%3)) {
+            int x = i;
+            // dbgl(x);
+            int p2 = 0;
+            while (x*2<=n) { p2++; x*=2; }
+            x = i;
+            int p3 = 0;
+            while (x*3<=n) { p3++; x*=3; }
+
+            // dbgl(p2, p3);
+
+            ans += broken_profile(i, p2+1, p3+1);
+            // dbgl(ans);
+        }
     }
-    // cerr << ans << endl;
     cout << ans << endl;
 }
 
-/*Driver Code*/
+/* Cat memes */
 signed main(){
     cin.tie(0) -> sync_with_stdio(0);
-    if (fopen(TEXT".inp","r")){
-        freopen(TEXT".inp","r",stdin);
-        freopen(TEXT".out","w",stdout);
-    }
+    if (fopen(TEXT".inp","r")){ freopen(TEXT".inp","r",stdin); freopen(TEXT".out","w",stdout); }
 
-    int testCount = 1;
-   cin >> testCount;
-    while (testCount--){
-        solve();
-    }
+    int test_count = 1;
+    cache2[0] = 1;
+    frep(i,1,LG2) cache2[i] = cache2[i-1] * 2;
+    cache3[0] = 1;
+    frep(i,1,LG3) cache3[i] = cache3[i-1] * 3;
+    // dbgl(cache2,cache2+LG2);
+    // dbgl(cache3,cache3+LG3);
+    if (MULTI_TEST) cin >> test_count;
+    while (test_count--){ solve(); }
 
     return 0;
 }

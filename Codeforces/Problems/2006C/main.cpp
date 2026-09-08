@@ -1,4 +1,4 @@
-/*She smiles, but nothing behind it feels real. The neon glow wraps around her like armor vibrant, untouchable, cold. Once, maybe, there was warmth in her gestures� but now it�s rehearsed. Perfectly practiced detachment. Her wave is polite, her wink playful, yet there�s an eerie hollowness like a ghost who forgot what it meant to feel. She doesn�t break down. She doesn�t react. She simply exists flawless, empty, and free. Because having zero feelings means never being hurt again.*/
+/* What's the difference between a baby boomer and a matter baby? */
 #include <bits/stdc++.h>
 
 #define TEXT ""
@@ -6,11 +6,14 @@
 using namespace std;
 
 #define pb push_back
+#define mkpr make_pair
+#define eb emplace_back
 #define endl "\n"
 #define ffor(i, a, b) for(int i = a; i <= (b); ++i)
 #define rfor(i, a, b) for(int i = a; i >= (b); --i)
 #define frep(i, a, b) for(int i = a; i < (b); ++i)
 #define rrep(i, a, b) for(int i = a; i > (b); --i)
+#define feach(x, a) for (auto& x : (a))
 #define all(x) (x).begin(),(x).end()
 #define fi first
 #define se second
@@ -26,12 +29,12 @@ typedef pair<double,double> pdd;
 
 mt19937_64 rd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
-const int N = 2e5+10;
-const int INF = 1e9+7;
-const int MD = 1e9+7; //998244353;
-const long long LLINF = 1e18+3;
+void prans(bool answer = true) { cout << (answer ? "YES\n" : "NO\n"); }
+void prno() { cout << "NO\n"; }
+void pryes() { cout << "YES\n"; }
 
-//Starts here
+template<class T, class U> bool minimize(T& a, const U& b) { return b < a ? (a = b, true) : false; }
+template<class T, class U> bool maximize(T& a, const U& b) { return a < b ? (a = b, true) : false; }
 
 namespace dbg_ {
     template<class> inline constexpr bool always_false_v = false;
@@ -96,51 +99,98 @@ namespace dbg_ {
 template<class... Args> void dbg(const Args&... args) { dbg_::go(args...); }
 #define dbgl(...) (std::cerr << "[" #__VA_ARGS__ "] = ", dbg(__VA_ARGS__))
 
+// Constants
+const int N = 4e5+10;
+const int LG = 19;
+const int INF = 1e9+7;
+const int MD = 1e9+7; //998244353;
+const long long LLINF = 1e18+3;
+
+const bool MULTI_TEST = true;
+
+//Starts here
 
 int n;
-map<int,int> mp;
+int a[N];
+int jump[LG][N];
+
+int resolve(int x) {
+    return x;
+}
+
+int get_delta(int a, int b) {
+    int del = abs(resolve(a) - resolve(b));
+    if (del == 0) return INF;
+    else return del;
+}
+
+int update(int x, int y) {
+    if (x==INF) return y;
+    if (y==INF) return x;
+    return __gcd<ll>(x,y);
+}
+
+bool is_valid(int x) {
+    return (__builtin_popcount(x) == 1);
+}
 
 void solve(){
     cin >> n;
-    mp.clear();
-    mp[0] = 3;
-    int val = 0;
-    for (int i=1; i<=n; i++){
-        int x; cin >> x;
-        val^=x;
-        if (mp.find(val) != mp.end()) {
-            mp.insert(make_pair(val,0));
-        }
-        if(mp[val]) {
-            mp[val^x] = (mp[val^x] + 2*mp[val])%MD;
-        }
-        if (i==n) break;
-        if (mp[val]) {
-            mp[val] = (mp[val]*3)%MD;
-        }
-        // dbg(mp);
+    ffor(i,1,n) {
+        cin >> a[i];
     }
+    rfor(i,n,1) {
+        jump[0][i] = (i==n) ? 1 : get_delta(a[i], a[i+1]);
+        frep(lg,1,LG) {
+            int j = i + (1<<(lg-1));
+            // cout << i << " " << lg << " " << j << " " << jump[lg-1][i] << " " << jump[lg-1][j] << endl;
+            jump[lg][i] = ((j > n) ? 1 : update(jump[lg-1][i], jump[lg-1][j]));
+        }
+    }
+
+    // ffor(i,1,n) {
+    //     ffor(lg,0,3) {
+    //         cout << jump[lg][i] << " ";
+    //     }
+    //     cout << endl;
+    // }
+
     int ans = 0;
-    for (auto it=mp.begin(); it!=mp.end(); it++){
-        ans = (ans + it->se)%MD;
+    ffor(i,1,n) {
+        int cur = i;
+        int val = INF;
+        rfor(lg, LG-1, 0) {
+            if (!is_valid(update(val, jump[lg][cur]))) {
+                val = update(val, jump[lg][cur]);
+                cur = cur + (1<<lg);
+            }
+        }
+        // cout << i << " " << cur << " ";
+        ans += n - cur;
+
+        cur = i;
+        val = INF;
+        rfor(lg, LG-1, 0) {
+            if (update(val, jump[lg][cur]) == INF) {
+                val = update(val, jump[lg][cur]);
+                cur = cur + (1<<lg);
+            }
+        }
+        ans += cur - i + 1;
+        // cout << cur << endl;
     }
-    // cerr << ans << endl;
     cout << ans << endl;
 }
 
-/*Driver Code*/
+/* Cat memes */
 signed main(){
     cin.tie(0) -> sync_with_stdio(0);
-    if (fopen(TEXT".inp","r")){
-        freopen(TEXT".inp","r",stdin);
-        freopen(TEXT".out","w",stdout);
-    }
+    if (fopen(TEXT".inp","r")){ freopen(TEXT".inp","r",stdin); freopen(TEXT".out","w",stdout); }
 
-    int testCount = 1;
-   cin >> testCount;
-    while (testCount--){
-        solve();
-    }
+    int test_count = 1;
+    
+    if (MULTI_TEST) cin >> test_count;
+    while (test_count--){ solve(); }
 
     return 0;
 }
